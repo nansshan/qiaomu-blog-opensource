@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   buildEditorImageFilename,
   buildUploadPlaceholderText,
+  copyEditorImage,
   createUploadPlaceholderMarker,
   insertGeneratedImageAfterNode,
   insertGeneratedImageAtPosition,
@@ -73,6 +74,10 @@ describe('editor-file-upload helpers', () => {
     vi.stubGlobal('XMLHttpRequest', FakeXMLHttpRequest)
   })
 
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('builds readable upload placeholders for media and generic files', () => {
     expect(buildUploadPlaceholderText(createFile('clip.mp4', 'video/mp4'), 'marker')).toBe('📤 视频上传中... [marker]')
     expect(buildUploadPlaceholderText(createFile('voice.mp3', 'audio/mpeg'), 'marker')).toBe('📤 音频上传中... [marker]')
@@ -91,6 +96,39 @@ describe('editor-file-upload helpers', () => {
   it('builds stable filenames for editor image downloads', () => {
     expect(buildEditorImageFilename('/api/images/abc123?format=webp', '封面 主视觉')).toBe('封面-主视觉.webp')
     expect(buildEditorImageFilename('https://example.com/files/photo.jpeg', '')).toBe('photo.jpeg')
+  })
+
+  it('copies image blobs to clipboard when the browser supports image clipboard writes', async () => {
+    const write = vi.fn().mockResolvedValue(undefined)
+    const imageBlob = new Blob(['image-bytes'], { type: 'image/webp' })
+
+    vi.stubGlobal('navigator', {
+      clipboard: { write },
+    })
+    vi.stubGlobal('window', {
+      ClipboardItem: class ClipboardItem {
+        items: Record<string, Blob>
+
+        constructor(items: Record<string, Blob>) {
+          this.items = items
+        }
+      },
+    })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      blob: async () => imageBlob,
+    }))
+
+    await copyEditorImage('/api/images/copied.webp')
+
+    expect(write).toHaveBeenCalledTimes(1)
+  })
+
+  it('throws a readable error when image clipboard is unsupported', async () => {
+    vi.stubGlobal('navigator', {})
+    vi.stubGlobal('window', {})
+
+    await expect(copyEditorImage('/api/images/copied.webp')).rejects.toThrow('当前浏览器不支持复制图片')
   })
 
   it('uploads files, reports progress, and returns the uploaded metadata on success', async () => {

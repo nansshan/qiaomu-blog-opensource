@@ -41,6 +41,34 @@ export function downloadEditorImage(imageUrl: string, fallbackName?: string) {
   anchor.remove()
 }
 
+export async function copyEditorImage(imageUrl: string) {
+  if (
+    typeof navigator === 'undefined'
+    || typeof window === 'undefined'
+    || !navigator.clipboard?.write
+    || typeof window.ClipboardItem === 'undefined'
+  ) {
+    throw new Error('当前浏览器不支持复制图片')
+  }
+
+  const response = await fetch(imageUrl, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error(`图片获取失败 (${response.status})`)
+  }
+
+  const blob = await response.blob()
+  const mimeType = blob.type || 'image/png'
+
+  await navigator.clipboard.write([
+    new window.ClipboardItem({
+      [mimeType]: blob,
+    }),
+  ])
+}
+
 export async function uploadEditorFile(
   file: File,
   onProgress?: (percent: number) => void,

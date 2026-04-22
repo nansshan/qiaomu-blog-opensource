@@ -1,13 +1,14 @@
 'use client'
 
+import { useToast } from '@/components/Toast'
 import { mergeAttributes } from '@tiptap/core'
 import Image, { type ImageOptions } from '@tiptap/extension-image'
 import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react'
-import { AlignCenter, AlignLeft, Crop, Download, ImagePlus, MoreHorizontal, WandSparkles } from 'lucide-react'
+import { AlignCenter, AlignLeft, Copy, Crop, Download, ImagePlus, MoreHorizontal, WandSparkles } from 'lucide-react'
 import { UploadImagesPlugin } from 'novel'
 import { createPortal } from 'react-dom'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { downloadEditorImage } from './editor-file-upload'
+import { copyEditorImage, downloadEditorImage } from './editor-file-upload'
 
 export type EditorImageAlignment = 'left' | 'center'
 
@@ -108,6 +109,7 @@ function ResizableImageView(props: any) {
   const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null)
   const align = normalizeAlignment(node.attrs.align)
   const imageActions = extension.options?.imageActions
+  const toast = useToast()
 
   const imageTarget = useMemo<EditorImageActionTarget>(() => {
     const position = typeof getPos === 'function' ? getPos() : null
@@ -205,6 +207,23 @@ function ResizableImageView(props: any) {
           >
             <Download className="h-4 w-4" />
             <span>下载图片</span>
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await copyEditorImage(imageTarget.src)
+                toast.success('已复制图片')
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : '复制图片失败')
+              } finally {
+                closeMenu()
+              }
+            }}
+            className="editor-image-menu-item"
+          >
+            <Copy className="h-4 w-4" />
+            <span>复制图片</span>
           </button>
           <button
             type="button"
