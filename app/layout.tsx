@@ -38,8 +38,8 @@ const SITE_URL = getSiteUrl()
 export const metadata: Metadata = {
   metadataBase: getSiteUrlObject(),
   title: {
-    default: '乔木博客',
-    template: '%s · 乔木博客',
+    default: '小上上的AI建筑笔记',
+    template: '%s · 小上上的AI建筑笔记',
   },
   description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
   icons: {
@@ -62,15 +62,15 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'zh_CN',
     url: SITE_URL,
-    siteName: '乔木博客',
-    title: '乔木博客',
+    siteName: '小上上的AI建筑笔记',
+    title: '小上上的AI建筑笔记',
     description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
     images: [
       {
         url: '/icon-512.png',
         width: 512,
         height: 512,
-        alt: '乔木博客',
+        alt: '小上上的AI建筑笔记',
       },
     ],
   },
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     card: 'summary',
     site: '@vista8',
     creator: '@vista8',
-    title: '乔木博客',
+    title: '小上上的AI建筑笔记',
     description: '记录思考，分享所学，留住当下。技术、生活、读书笔记的数字花园。',
     images: ['/icon-512.png'],
   },
